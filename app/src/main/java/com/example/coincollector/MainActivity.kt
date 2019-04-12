@@ -1,6 +1,7 @@
 package com.example.coincollector
 
 import android.content.Intent
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
@@ -11,14 +12,19 @@ import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
 import com.example.coincollector.dummy.DummyContent
+import com.example.coincollector.models.Pokemon
+import com.example.coincollector.utilities.NetworkUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.item_list.*
 import kotlinx.android.synthetic.main.item_list_content.view.*
+import org.json.JSONObject
+import java.io.IOException
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var twoPane: Boolean = false
+    private lateinit var dataRes: MutableList<Pokemon>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +50,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             twoPane = true
         }
 
-        setupRecyclerView(item_list)
+
 
         nav_view.setNavigationItemSelectedListener(this)
     }
@@ -75,24 +81,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+        var search: TextView = findViewById(R.id.tv_searching)
         when (item.itemId) {
-            R.id.nav_camera -> {
-                // Handle the camera action
+            R.id.type_fire -> {
+                search.text = "Searching: Fire Pokemon"
+                FetchDataTask().execute("10")
             }
-            R.id.nav_gallery -> {
-
-            }
-            R.id.nav_slideshow -> {
-
-            }
-            R.id.nav_manage -> {
-
-            }
-            R.id.nav_share -> {
-
-            }
-            R.id.nav_send -> {
-
+            R.id.type_water -> {
+                search.text = "Searching: Water Pokemon"
+                FetchDataTask().execute("11")
             }
         }
 
@@ -101,12 +98,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setupRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.adapter = SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, twoPane)
+        recyclerView.adapter = SimpleItemRecyclerViewAdapter(this, dataRes, twoPane)
     }
 
     class SimpleItemRecyclerViewAdapter(
             private val parentActivity: MainActivity,
-            private val values: List<DummyContent.DummyItem>,
+            private val values: List<Pokemon>,
             private val twoPane: Boolean
     ) :
             RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
@@ -115,7 +112,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         init {
             onClickListener = View.OnClickListener { v ->
-                val item = v.tag as DummyContent.DummyItem
+                val item = v.tag as Pokemon
                 if (twoPane) {
                     val fragment = ItemDetailFragment().apply {
                         arguments = Bundle().apply {
@@ -144,7 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = values[position]
             holder.idView.text = item.id
-            holder.contentView.text = item.content
+            holder.contentView.text = item.name
 
             with(holder.itemView) {
                 tag = item
@@ -158,5 +155,53 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val idView: TextView = view.id_text
             val contentView: TextView = view.content
         }
+    }
+
+    private inner class FetchDataTask : AsyncTask<String, Void, String>() {
+
+        override fun doInBackground(vararg dataNumbers: String): String? {
+
+            if (dataNumbers.isEmpty()) {
+                return null
+            }
+
+            val ID = dataNumbers[0]
+
+            val customAPI = NetworkUtils.buildUrl(ID, "type")
+
+            try {
+                return NetworkUtils.getResponseFromHttpUrl(customAPI!!)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                return ""
+            }
+
+        }
+
+        override fun onPostExecute(dataInfo: String?) {
+            if (dataInfo != null && dataInfo != "") {
+                val resultados = JSONObject(dataInfo)
+                val pokemones = resultados.getJSONArray("pokemon")
+                //var textoRes = ""
+
+                dataRes = MutableList(pokemones.length()) { i ->
+                    Pokemon(pokemones.getJSONObject(i).getJSONObject("pokemon").getString("url").split("/")[6],"Pokémon: " + pokemones.getJSONObject(i).getJSONObject("pokemon").getString("name").capitalize(), "Pokédex #"+pokemones.getJSONObject(i).getJSONObject("pokemon").getString("url").split("/")[6])
+                }
+
+                println(dataInfo)
+
+                setupRecyclerView(item_list)
+
+                //mResultText?.text = textoRes
+            } else {
+                dataRes = MutableList(1) { i ->
+                    Pokemon("Empty","Check the information provided", "No data found")
+                }
+
+                setupRecyclerView(item_list)
+            }
+        }
+
+
     }
 }
