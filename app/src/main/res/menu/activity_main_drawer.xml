@@ -3,16 +3,11 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:showIn="navigation_view">
 
-    <item android:title="Pokemon Types">
+    <item android:title="Coins By Country">
         <menu>
             <item
-                android:id="@+id/type_fire"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Fire"/>
-            <item
-                android:id="@+id/type_water"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Water"/>
+                android:id="@+id/type_sv"
+                android:title="El Salvador"/>
         </menu>
     </item>
 

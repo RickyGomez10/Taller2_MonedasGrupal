@@ -10,15 +10,14 @@ import java.util.*
 
 object NetworkUtils {
 
-    val POKEMON_API_BASE_URL = "https://pokeapi.co/api/v2/"
+    val COINS_API_BASE_URL = "https://coin-app.herokuapp.com/country/"
 
     private val TAG = NetworkUtils::class.java.simpleName
 
-    fun buildUrl(pokeType: String, pokeInfo: String): URL? {
-        val builtUri = Uri.parse(POKEMON_API_BASE_URL)
+    fun buildUrl(countryName: String): URL? {
+        val builtUri = Uri.parse(COINS_API_BASE_URL)
             .buildUpon()
-            .appendPath(pokeInfo)
-            .appendPath(pokeType)
+            .appendPath(countryName)
             .build()
 
         var url: URL? = null

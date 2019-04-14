@@ -11,8 +11,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
-import com.example.coincollector.dummy.DummyContent
-import com.example.coincollector.models.Pokemon
+import com.example.coincollector.models.Country
 import com.example.coincollector.utilities.NetworkUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -24,7 +23,7 @@ import java.io.IOException
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var twoPane: Boolean = false
-    private lateinit var dataRes: MutableList<Pokemon>
+    private lateinit var dataRes: MutableList<Country>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,13 +82,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle navigation view item clicks here.
         var search: TextView = findViewById(R.id.tv_searching)
         when (item.itemId) {
-            R.id.type_fire -> {
-                search.text = "Searching: Fire Pokemon"
-                FetchDataTask().execute("10")
-            }
-            R.id.type_water -> {
-                search.text = "Searching: Water Pokemon"
-                FetchDataTask().execute("11")
+            R.id.type_sv -> {
+                search.text = "Searching: Coins from El Salvador"
+                FetchDataTask().execute("El_Salvador")
             }
         }
 
@@ -103,7 +98,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     class SimpleItemRecyclerViewAdapter(
             private val parentActivity: MainActivity,
-            private val values: List<Pokemon>,
+            private val values: List<Country>,
             private val twoPane: Boolean
     ) :
             RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
@@ -112,7 +107,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         init {
             onClickListener = View.OnClickListener { v ->
-                val item = v.tag as Pokemon
+                val item = v.tag as Country
                 if (twoPane) {
                     val fragment = ItemDetailFragment().apply {
                         arguments = Bundle().apply {
@@ -167,7 +162,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             val ID = dataNumbers[0]
 
-            val customAPI = NetworkUtils.buildUrl(ID, "type")
+            val customAPI = NetworkUtils.buildUrl(ID)
 
             try {
                 return NetworkUtils.getResponseFromHttpUrl(customAPI!!)
@@ -181,11 +176,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun onPostExecute(dataInfo: String?) {
             if (dataInfo != null && dataInfo != "") {
                 val resultados = JSONObject(dataInfo)
-                val pokemones = resultados.getJSONArray("pokemon")
+                val monedas = resultados.getJSONArray("coins")
                 //var textoRes = ""
 
-                dataRes = MutableList(pokemones.length()) { i ->
-                    Pokemon(pokemones.getJSONObject(i).getJSONObject("pokemon").getString("url").split("/")[6],"Pokémon: " + pokemones.getJSONObject(i).getJSONObject("pokemon").getString("name").capitalize(), "Pokédex #"+pokemones.getJSONObject(i).getJSONObject("pokemon").getString("url").split("/")[6])
+                dataRes = MutableList(monedas.length()) { i ->
+                    Country(monedas.getJSONObject(i).getString("codename"),"Moneda: " + monedas.getJSONObject(i).getString("name").capitalize(), dataInfo)
                 }
 
                 println(dataInfo)
@@ -195,7 +190,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 //mResultText?.text = textoRes
             } else {
                 dataRes = MutableList(1) { i ->
-                    Pokemon("Empty","Check the information provided", "No data found")
+                    Country("Empty","Check the information provided", "No data found")
                 }
 
                 setupRecyclerView(item_list)
