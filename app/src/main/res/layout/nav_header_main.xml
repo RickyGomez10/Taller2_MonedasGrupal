@@ -25,13 +25,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="@dimen/nav_header_vertical_spacing"
-            android:text="Collector Name"
+            android:text="Nombre del coleccionista"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ready to search!"
+            android:text="¡Listo para buscar!"
             android:id="@+id/tv_searching"/>
 
 </LinearLayout>

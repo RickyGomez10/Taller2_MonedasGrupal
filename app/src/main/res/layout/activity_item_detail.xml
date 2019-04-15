@@ -51,4 +51,5 @@
             app:layout_anchor="@+id/item_detail_container"
             app:layout_anchorGravity="top|end"/>
 
+
 </android.support.design.widget.CoordinatorLayout>

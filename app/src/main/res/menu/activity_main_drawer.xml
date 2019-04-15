@@ -3,11 +3,26 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:showIn="navigation_view">
 
-    <item android:title="Coins By Country">
+    <item android:title="Monedas por país">
         <menu>
             <item
                 android:id="@+id/type_sv"
                 android:title="El Salvador"/>
+            <item
+                android:id="@+id/type_hn"
+                android:title="Honduras"/>
+            <item
+                android:id="@+id/type_nc"
+                android:title="Nicaragua"/>
+            <item
+                android:id="@+id/type_jp"
+                android:title="Japón"/>
+            <item
+                android:id="@+id/type_sp"
+                android:title="España"/>
+            <item
+                android:id="@+id/type_rs"
+                android:title="Rusia"/>
         </menu>
     </item>
 

@@ -42,10 +42,10 @@ class ItemDetailActivity : AppCompatActivity() {
             // using a fragment transaction.
             val fragment = ItemDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putString(
-                        ItemDetailFragment.ARG_ITEM_ID,
-                        intent.getStringExtra(ItemDetailFragment.ARG_ITEM_ID)
-                    )
+                    putString("ID", intent.getStringExtra("ID"))
+                    putString("Name", intent.getStringExtra("Name"))
+                    putString("Country", intent.getStringExtra("Country"))
+                    putString("jsonInfo", intent.getStringExtra("jsonInfo"))
                 }
             }
 

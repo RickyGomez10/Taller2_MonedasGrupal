@@ -11,7 +11,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
-import com.example.coincollector.models.Country
+import com.example.coincollector.models.Coin
 import com.example.coincollector.utilities.NetworkUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -23,7 +23,7 @@ import java.io.IOException
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var twoPane: Boolean = false
-    private lateinit var dataRes: MutableList<Country>
+    private lateinit var dataRes: MutableList<Coin>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,8 +83,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var search: TextView = findViewById(R.id.tv_searching)
         when (item.itemId) {
             R.id.type_sv -> {
-                search.text = "Searching: Coins from El Salvador"
+                search.text = "Buscando monedas de El Salvador"
                 FetchDataTask().execute("El_Salvador")
+            }
+            R.id.type_hn -> {
+                search.text = "Buscando monedas de Honduras"
+                FetchDataTask().execute("Honduras")
+            }
+            R.id.type_nc -> {
+                search.text = "Buscando monedas de Nicaragua"
+                FetchDataTask().execute("Nicaragua")
+            }
+            R.id.type_jp -> {
+                search.text = "Buscando monedas de Japón"
+                FetchDataTask().execute("Japón")
+            }
+            R.id.type_sp -> {
+                search.text = "Buscando monedas de España"
+                FetchDataTask().execute("España")
+            }
+            R.id.type_rs -> {
+                search.text = "Buscando monedas de Rusia"
+                FetchDataTask().execute("Rusia")
             }
         }
 
@@ -97,9 +117,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     class SimpleItemRecyclerViewAdapter(
-            private val parentActivity: MainActivity,
-            private val values: List<Country>,
-            private val twoPane: Boolean
+        private val parentActivity: MainActivity,
+        private val values: List<Coin>,
+        private val twoPane: Boolean
     ) :
             RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
 
@@ -107,11 +127,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         init {
             onClickListener = View.OnClickListener { v ->
-                val item = v.tag as Country
+                val item = v.tag as Coin
                 if (twoPane) {
                     val fragment = ItemDetailFragment().apply {
                         arguments = Bundle().apply {
-                            putString(ItemDetailFragment.ARG_ITEM_ID, item.id)
+                            putString("ID", item.id)
+                            putString("Name", item.name)
+                            putString("Country", item.country)
+                            putString("jsonInfo", item.jsonInfo)
                         }
                     }
                     parentActivity.supportFragmentManager
@@ -120,7 +143,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             .commit()
                 } else {
                     val intent = Intent(v.context, ItemDetailActivity::class.java).apply {
-                        putExtra(ItemDetailFragment.ARG_ITEM_ID, item.id)
+                        putExtra("ID", item.id)
+                        putExtra("Name", item.name)
+                        putExtra("Country", item.country)
+                        putExtra("jsonInfo", item.jsonInfo)
                     }
                     v.context.startActivity(intent)
                 }
@@ -180,7 +206,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 //var textoRes = ""
 
                 dataRes = MutableList(monedas.length()) { i ->
-                    Country(monedas.getJSONObject(i).getString("codename"),"Moneda: " + monedas.getJSONObject(i).getString("name").capitalize(), dataInfo)
+                    Coin(monedas.getJSONObject(i).getString("codename"),monedas.getJSONObject(i).getString("name").capitalize(), resultados.getString("basename"),monedas.get(i).toString())
                 }
 
                 println(dataInfo)
@@ -190,7 +216,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 //mResultText?.text = textoRes
             } else {
                 dataRes = MutableList(1) { i ->
-                    Country("Empty","Check the information provided", "No data found")
+                    Coin("Empty","Check the information provided", "No data found", "")
                 }
 
                 setupRecyclerView(item_list)
