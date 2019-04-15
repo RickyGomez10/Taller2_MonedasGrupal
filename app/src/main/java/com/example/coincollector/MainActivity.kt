@@ -10,7 +10,9 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.view.*
+import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.example.coincollector.models.Coin
 import com.example.coincollector.utilities.NetworkUtils
 import kotlinx.android.synthetic.main.activity_main.*
@@ -161,6 +163,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = values[position]
+            val data = JSONObject(item.jsonInfo)
+
+            holder.imagen?.let {
+                Glide.with(holder.imagen.context).load(data.getString("img")).into(
+                    it
+                )
+            }
+
             holder.idView.text = item.id
             holder.contentView.text = item.name
 
@@ -173,6 +183,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun getItemCount() = values.size
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val imagen: ImageView = view.imagen
             val idView: TextView = view.id_text
             val contentView: TextView = view.content
         }
