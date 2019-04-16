@@ -33,7 +33,7 @@ class ItemDetailFragment : Fragment() {
                 // arguments. In a real-world scenario, use a Loader
                 // to load content from a content provider.
                 item = Coin(it.getString("ID"), it.getString("Name"), it.getString("Country"), it.getString("jsonInfo"))
-                activity?.toolbar_layout?.title = "Moneda: "+item?.name
+                activity?.toolbar_layout?.title = "Detalles"
             }
         }
 
@@ -48,7 +48,7 @@ class ItemDetailFragment : Fragment() {
         // Show the dummy content as text in a TextView.
         item?.let {
             val data = JSONObject(it.jsonInfo)
-            rootView.item_detail.text = "País: "+it.country+"\n"+"Año: "+data.getString("year")+"\n"+"Símbolo: "+data.getString("symbol")+"\n"+"Estado: "+data.getString("state")+"\n\n"+"Descripción: "+data.getString("desc")+"\n"
+            rootView.item_detail.text = "Moneda: "+it.name+"\n"+"País: "+it.country+"\n"+"Año: "+data.getString("year")+"\n"+"Símbolo: "+data.getString("symbol")+"\n"+"Estado: "+data.getString("state")+"\n\n"+"Descripción: "+data.getString("desc")+"\n"
         }
 
         return rootView

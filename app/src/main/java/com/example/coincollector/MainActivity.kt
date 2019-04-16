@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // If this view is present, then the
             // activity should be in two-pane mode.
             twoPane = true
+
         }
 
 
@@ -122,8 +123,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private val parentActivity: MainActivity,
         private val values: List<Coin>,
         private val twoPane: Boolean
-    ) :
-            RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
+    ) : RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
 
         private val onClickListener: View.OnClickListener
 
@@ -171,7 +171,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 )
             }
 
-            holder.idView.text = item.id
             holder.contentView.text = item.name
 
             with(holder.itemView) {
@@ -184,7 +183,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val imagen: ImageView = view.imagen
-            val idView: TextView = view.id_text
             val contentView: TextView = view.content
         }
     }
@@ -214,23 +212,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (dataInfo != null && dataInfo != "") {
                 val resultados = JSONObject(dataInfo)
                 val monedas = resultados.getJSONArray("coins")
-                //var textoRes = ""
 
                 dataRes = MutableList(monedas.length()) { i ->
                     Coin(monedas.getJSONObject(i).getString("codename"),monedas.getJSONObject(i).getString("name").capitalize(), resultados.getString("basename"),monedas.get(i).toString())
                 }
 
-                println(dataInfo)
 
                 setupRecyclerView(item_list)
 
-                //mResultText?.text = textoRes
             } else {
-                dataRes = MutableList(1) { i ->
-                    Coin("Empty","Check the information provided", "No data found", "")
-                }
 
-                setupRecyclerView(item_list)
+                //Algo
+
             }
         }
 
