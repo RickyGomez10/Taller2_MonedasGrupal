@@ -1,5 +1,6 @@
 package com.example.coincollector
 
+import android.content.ContentValues
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
@@ -9,9 +10,11 @@ import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.example.coincollector.models.Coin
 import com.example.coincollector.utilities.NetworkUtils
@@ -19,13 +22,22 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.item_list.*
 import kotlinx.android.synthetic.main.item_list_content.view.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
+    var dbHelper = Database(this)
+
+
     private var twoPane: Boolean = false
     private lateinit var dataRes: MutableList<Coin>
+
+    override fun onDestroy() {
+        dbHelper.close()
+        super.onDestroy()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,27 +99,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.type_sv -> {
                 search.text = "Buscando monedas de El Salvador"
-                FetchDataTask().execute("El_Salvador")
+                readCoins("El_Salvador")
             }
             R.id.type_hn -> {
                 search.text = "Buscando monedas de Honduras"
-                FetchDataTask().execute("Honduras")
+                readCoins("Honduras")
             }
             R.id.type_nc -> {
                 search.text = "Buscando monedas de Nicaragua"
-                FetchDataTask().execute("Nicaragua")
+                readCoins("Nicaragua")
             }
             R.id.type_jp -> {
                 search.text = "Buscando monedas de Japón"
-                FetchDataTask().execute("Japón")
+                readCoins("Japón")
             }
             R.id.type_sp -> {
                 search.text = "Buscando monedas de España"
-                FetchDataTask().execute("España")
+                readCoins("España")
             }
             R.id.type_rs -> {
                 search.text = "Buscando monedas de Rusia"
-                FetchDataTask().execute("Rusia")
+                readCoins("Rusia")
+
             }
         }
 
@@ -155,6 +168,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_list_content, parent, false)
@@ -187,6 +201,65 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun readCoins( id: String) {
+
+        val db = dbHelper.readableDatabase
+
+        val projection = arrayOf(
+
+            DatabaseContract.PersonaEntry.COLUMN_ID,
+            DatabaseContract.PersonaEntry.COLUMN_COUNTRY,
+            DatabaseContract.PersonaEntry.COLUMN_BASENAME,
+            DatabaseContract.PersonaEntry.COLUMN_RESULTADOS
+
+        )
+
+        val sortOrder = "${DatabaseContract.PersonaEntry.COLUMN_BASENAME} DESC"
+
+        val cursor = db.query(
+            DatabaseContract.PersonaEntry.TABLE_NAME, // nombre de la tabla
+            projection, // columnas que se devolverán
+            "country =? ", // Columns where clausule
+            arrayOf(id), // values Where clausule
+            null, // Do not group rows
+            null, // do not filter by row
+            sortOrder // sort order
+        )
+
+        var lista = mutableListOf<Coin>()
+
+
+        with(cursor) {
+
+            while (moveToNext()) {
+                var persona = Coin(
+                    getString(getColumnIndexOrThrow(DatabaseContract.PersonaEntry.COLUMN_ID)),
+                    getString(getColumnIndexOrThrow(DatabaseContract.PersonaEntry.COLUMN_COUNTRY)),
+                    getString(getColumnIndexOrThrow(DatabaseContract.PersonaEntry.COLUMN_BASENAME)),
+                    getString(getColumnIndexOrThrow(DatabaseContract.PersonaEntry.COLUMN_RESULTADOS))
+
+                )
+
+                lista.add(persona)
+            }
+        }
+        if(lista.size == 0 ){
+            FetchDataTask().execute(id)
+            Log.i("Yayinfo?", "No")
+
+
+        }else{
+            val monedas = JSONObject(lista[0].jsonInfo).getJSONArray("coins");
+            dataRes = MutableList(monedas.length()) { i ->
+                Coin(monedas.getJSONObject(i).getString("codename"),monedas.getJSONObject(i).getString("name").capitalize(),lista[0].country,monedas.get(i).toString())
+            }
+
+            setupRecyclerView(item_list)
+            Log.i("Yayinfo?", "Si")
+        }
+
+    }
+
     private inner class FetchDataTask : AsyncTask<String, Void, String>() {
 
         override fun doInBackground(vararg dataNumbers: String): String? {
@@ -208,10 +281,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         }
 
+        //base de datos
+
+
+
         override fun onPostExecute(dataInfo: String?) {
             if (dataInfo != null && dataInfo != "") {
+
                 val resultados = JSONObject(dataInfo)
                 val monedas = resultados.getJSONArray("coins")
+
+                //Base de datos
+
+                val country = resultados.getString("country")
+                val idPais = resultados.getString("id")
+                val basename = resultados.getString("basename")
+                val db = dbHelper.writableDatabase
+                val values = ContentValues().apply {
+                    put(DatabaseContract.PersonaEntry.COLUMN_ID, idPais)
+                    put(DatabaseContract.PersonaEntry.COLUMN_COUNTRY, country)
+                    put(DatabaseContract.PersonaEntry.COLUMN_BASENAME, basename)
+                    put(DatabaseContract.PersonaEntry.COLUMN_RESULTADOS, dataInfo)
+
+                }
+
+                val newRowId = db?.insert(DatabaseContract.PersonaEntry.TABLE_NAME, null, values)
+                Log.i("Nombre:",country)
+                Log.i("id:", idPais)
+                if (newRowId == -1L) {
+                    Log.i("Se pudo?", "No")
+                } else {
+
+                    Log.i("Se pudo?", "Si")
+                }
+
+
+
 
                 dataRes = MutableList(monedas.length()) { i ->
                     Coin(monedas.getJSONObject(i).getString("codename"),monedas.getJSONObject(i).getString("name").capitalize(), resultados.getString("basename"),monedas.get(i).toString())
